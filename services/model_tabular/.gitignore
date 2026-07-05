@@ -1,0 +1,11 @@
+# Ignore the virtual environment
+.venv/
+env/
+venv/
+
+# Ignore python cache
+__pycache__/
+*.pyc
+
+# Do NOT ignore the model file (we need it in the docker container!)
+# !alzheimer_model_optimized.pkl
