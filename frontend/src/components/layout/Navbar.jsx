@@ -1,12 +1,28 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 import logoSrc from '../../assets/memocare_logo.png'
 
-export default function Navbar({ userName = 'John' }) {
+export default function Navbar() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
+
+  // Derive display name from user email
+  const userEmail = user?.email || 'Guest'
+  const userName = userEmail.split('@')[0]
+  const formattedName = userName.charAt(0).toUpperCase() + userName.slice(1)
 
   // Generate initials for avatar fallback
-  const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+  const initials = formattedName.split(/[._-]/).map(n => n[0]).join('').toUpperCase().slice(0, 2)
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/')
+    } catch (error) {
+      console.error("Error signing out:", error.message)
+    }
+  }
 
   return (
     <nav style={{
@@ -20,7 +36,7 @@ export default function Navbar({ userName = 'John' }) {
     }}>
       {/* Logo + Brand */}
       <div
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/dashboard')}
         style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
       >
         <img
@@ -39,35 +55,65 @@ export default function Navbar({ userName = 'John' }) {
         </span>
       </div>
 
-      {/* User info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <span style={{
-          fontSize: '18px',
-          color: '#cccccc',
-          fontFamily: 'Space Mono, monospace',
-        }}>
-          Welcome back, {userName}
-        </span>
+      {/* User info & Actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{
+            fontSize: '18px',
+            color: '#cccccc',
+            fontFamily: 'Space Mono, monospace',
+          }}>
+            Welcome, {formattedName}
+          </span>
 
-        {/* Avatar circle */}
-        <div style={{
-          width: '44px',
-          height: '44px',
-          borderRadius: '50%',
-          backgroundColor: '#2a2a2a',
-          border: '2px solid rgba(255,255,255,0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#fff',
-          fontSize: '16px',
-          fontWeight: '700',
-          fontFamily: 'Space Mono, monospace',
-          flexShrink: 0,
-        }}>
-          {initials}
+          {/* Avatar circle */}
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            backgroundColor: '#2a2a2a',
+            border: '2px solid rgba(255,255,255,0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: '700',
+            fontFamily: 'Space Mono, monospace',
+            flexShrink: 0,
+          }}>
+            {initials}
+          </div>
         </div>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          style={{
+            background: 'transparent',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            color: '#ef4444',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            fontFamily: 'Space Mono, monospace',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
+            e.currentTarget.style.borderColor = '#ef4444'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.4)'
+          }}
+        >
+          Logout
+        </button>
       </div>
     </nav>
   )
 }
+

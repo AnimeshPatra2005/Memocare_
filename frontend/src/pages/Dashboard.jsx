@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/layout/Navbar'
 import PathCard from '../components/dashboard/PathCard'
 import { Particles } from '../components/ui/particles'
@@ -23,6 +24,8 @@ const ChecklistIcon = () => (
 )
 
 export default function Dashboard() {
+  const navigate = useNavigate()
+
   return (
     <div style={{
       position: 'relative',
@@ -49,7 +52,7 @@ export default function Dashboard() {
         flexDirection: 'column',
         minHeight: '100vh',
       }}>
-        <Navbar userName="John" />
+        <Navbar />
 
         {/* Main content */}
       <div style={{
@@ -79,7 +82,7 @@ export default function Dashboard() {
             title={"Analyze\nMRI Scan"}
             description="Upload a brain MRI for AI-powered dementia detection and classification."
             buttonLabel="Learn More"
-            onClick={() => {}}
+            onClick={() => navigate('/mri-analysis')}
           />
 
           <PathCard
@@ -91,7 +94,7 @@ export default function Dashboard() {
             title={"Take\nAssessment"}
             description="Answer a series of questions to evaluate cognitive health and detect early signs."
             buttonLabel="Learn More"
-            onClick={() => {}}
+            onClick={() => navigate('/cognitive-assessment')}
           />
         </div>
 
@@ -116,3 +119,4 @@ export default function Dashboard() {
     </div>
   )
 }
+
