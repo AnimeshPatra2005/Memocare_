@@ -243,6 +243,12 @@ if os.path.exists(frontend_dist):
         # Prevent catching API endpoints that actually returned 404
         if catchall.startswith(("predict", "records", "generate-pdf", "health", "docs", "redoc", "openapi.json")):
             raise HTTPException(status_code=404, detail="API endpoint not found")
+            
+        # Check if the requested path is actually a static file in the root (like human-brain.glb or vite.svg)
+        file_path = os.path.join(frontend_dist, catchall)
+        if os.path.isfile(file_path):
+            from fastapi.responses import FileResponse
+            return FileResponse(file_path)
         
         index_path = os.path.join(frontend_dist, "index.html")
         if not os.path.exists(index_path):
