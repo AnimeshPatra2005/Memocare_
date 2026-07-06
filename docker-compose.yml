@@ -12,6 +12,7 @@ services:
       - TABULAR_SERVICE_URL=http://model-tabular:8002
       - PDF_SERVICE_URL=http://pdf-reports:8003
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
     depends_on:
       - db-service
       - model-mri
