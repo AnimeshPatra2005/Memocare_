@@ -203,3 +203,27 @@ async def generate_pdf(data: Dict[str, Any], user_id: str = Depends(get_current_
             return Response(content=response.content, media_type="application/pdf")
         except httpx.RequestError as e:
             raise HTTPException(status_code=503, detail=f"PDF Service unreachable: {e}")
+
+@app.delete("/records/mri/{record_id}")
+async def delete_mri_record(record_id: str, user_id: str = Depends(get_current_user_id)):
+    """Forward delete request for MRI record to DB service, checking ownership"""
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.delete(f"{DB_SERVICE_URL}/records/mri/{record_id}/{user_id}")
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=response.text)
+            return response.json()
+        except httpx.RequestError as e:
+            raise HTTPException(status_code=503, detail=f"Database Service unreachable: {e}")
+
+@app.delete("/records/tabular/{record_id}")
+async def delete_tabular_record(record_id: str, user_id: str = Depends(get_current_user_id)):
+    """Forward delete request for tabular record to DB service, checking ownership"""
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.delete(f"{DB_SERVICE_URL}/records/tabular/{record_id}/{user_id}")
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail=response.text)
+            return response.json()
+        except httpx.RequestError as e:
+            raise HTTPException(status_code=503, detail=f"Database Service unreachable: {e}")
