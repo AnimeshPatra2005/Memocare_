@@ -303,8 +303,54 @@ To initialize the new repository:
 
 ## 8. Open Questions
 
-> [!IMPORTANT]
-> Please review and provide feedback on the following questions:
-> 1. **Password Recovery**: Under client-side encryption, how should we handle password recovery? (Options: A. User loses their records on password reset; B. We generate a downloadable recovery key; C. We store a key encrypted with a secondary key derived from security questions).
-> 2. **MRI Images Encryption**: Do you want MRI scans to also be E2E encrypted in the database, or just the tabular medical data? (MRI scans are large, so encrypting/decrypting them on the client side takes more memory but is safer).
-> 3. **Monorepo vs. Multi-repo**: Do you prefer to keep all services in a single repository (monorepo) using Docker Compose to orchestrate, or split them into separate repositories? (We recommend a monorepo for easier coordination).
+*(Resolved)*
+- **Authentication**: Using email/password-based credentials with Supabase Auth to enable strict client-side encryption.
+- **E2EE**: Both tabular clinical data and MRI diagnosis verdicts are encrypted on the client side. Raw MRI images are processed in-memory by the inference model and not stored.
+- **Monorepo**: Successfully implemented using Docker Compose.
+
+---
+
+## 9. What's Next (Detailed Integration Plan)
+
+Below is the concrete roadmap to complete the frontend React integration with the running microservices backend.
+
+### Task 1: Navigation & Routing Setup
+- [ ] **Register React Routes** in `src/App.jsx`:
+  - `/` -> Landing page (Auth)
+  - `/dashboard` -> Main Dashboard cards
+  - `/mri-analysis` -> MRI scan upload & prediction
+  - `/cognitive-assessment` -> Tabular medical evaluation
+  - `/history` -> Patient records history
+- [ ] **Update Navbar (`src/components/layout/Navbar.jsx`)**:
+  - Integrate `useAuth()` to retrieve the logged-in user's email/name.
+  - Dynamically display the user's name/initials (replace hardcoded "John").
+  - Wire up the "Logout" button to trigger `logout()` from the context.
+- [ ] **Add Route Guards**: Redirect users to `/` if they are not authenticated (i.e., `cryptoKey` or `user` session is missing from `useAuth()`).
+
+### Task 2: MRI Analysis Feature (`src/pages/MriAnalysis.jsx`)
+- [ ] **File Upload UI**: Create a drag-and-drop area for brain MRI files.
+- [ ] **Prediction Request**: Post the uploaded image file to the Gateway at `POST /predict/mri`.
+- [ ] **Encryption & Storage Flow**:
+  - Receive the plaintext verdict (e.g., `"Non Demented"`).
+  - Encrypt the verdict client-side using `encryptData()` from `src/lib/crypto.js`.
+  - Post the resulting `encrypted_verdict` and `iv` to the Gateway `POST /records/mri` (attaching the user's Bearer JWT).
+
+### Task 3: Cognitive Assessment Feature (`src/pages/Assessment.jsx`)
+- [ ] **Clinical Form UI**: Design a structured multi-column form accepting all 17 required medical inputs (Age, BMI, BP, Cholesterol LDL/HDL, MMSE, ADL, symptoms).
+- [ ] **Prediction Request**: Post the raw inputs to the Gateway at `POST /predict/tabular`.
+- [ ] **Encryption & Storage Flow**:
+  - Receive the likelihood verdict (e.g., `"High Likelihood"`).
+  - Serialize the inputs and diagnosis into a single JSON object.
+  - Encrypt this JSON object client-side using the in-memory `CryptoKey`.
+  - Post the `encrypted_data`, `encrypted_verdict`, and `iv` to `POST /records/tabular` via the Gateway.
+
+### Task 4: Decryption & History Dashboard (`src/pages/History.jsx`)
+- [ ] **Retrieve Encrypted Records**:
+  - Fetch list of MRI scans from `GET /records/mri`.
+  - Fetch list of tabular assessments from `GET /records/tabular`.
+- [ ] **Client-Side Decryption**:
+  - Run the records through `decryptData()` using the local `cryptoKey`.
+  - Render the decrypted histories in clean grid layouts and interactive tables.
+- [ ] **PDF Export integration**:
+  - Add a "Download Report" button for each tabular record.
+  - Send the decrypted metrics back to the Gateway `POST /generate-pdf` to download the compiled ReportLab PDF.
