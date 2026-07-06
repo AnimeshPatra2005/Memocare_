@@ -4,7 +4,7 @@ import Navbar from '../components/layout/Navbar'
 import { useAuth } from '../context/AuthContext'
 import { decryptData } from '../lib/crypto'
 
-const GatewayUrl = 'http://localhost:8000'
+const GatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || window.location.origin
 
 export default function History() {
   const { session, cryptoKey } = useAuth()

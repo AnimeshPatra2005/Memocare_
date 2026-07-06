@@ -57,7 +57,7 @@ export default function MriAnalysis() {
       const formData = new FormData()
       formData.append('file', file)
 
-      const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8000'
+      const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || window.location.origin
       const predictRes = await fetch(`${gatewayUrl}/predict/mri`, {
         method: 'POST',
         body: formData,

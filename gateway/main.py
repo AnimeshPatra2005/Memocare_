@@ -6,6 +6,8 @@ from jwt import PyJWKClient
 from typing import Dict, Any
 from fastapi import FastAPI, Depends, HTTPException, Header, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 app = FastAPI(title="MemoCare API Gateway", version="1.0.0")
@@ -20,10 +22,10 @@ app.add_middleware(
 )
 
 # Environment Variables for internal service URLs
-DB_SERVICE_URL = "http://db-service:8002"
-MRI_SERVICE_URL = "http://model-mri:7860"
-TABULAR_SERVICE_URL = "http://model-tabular:8002"
-PDF_SERVICE_URL = "http://pdf-reports:8003"
+DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://db-service:8002")
+MRI_SERVICE_URL = os.getenv("MRI_SERVICE_URL", "http://model-mri:7860")
+TABULAR_SERVICE_URL = os.getenv("TABULAR_SERVICE_URL", "http://model-tabular:8002")
+PDF_SERVICE_URL = os.getenv("PDF_SERVICE_URL", "http://pdf-reports:8003")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 # Cache for PyJWKClient instances to avoid hitting the network on every request
@@ -227,3 +229,18 @@ async def delete_tabular_record(record_id: str, user_id: str = Depends(get_curre
             return response.json()
         except httpx.RequestError as e:
             raise HTTPException(status_code=503, detail=f"Database Service unreachable: {e}")
+
+# --- SERVE FRONTEND STATIC FILES (SPA Catch-all) ---
+frontend_dist = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../frontend/dist")
+
+if os.path.exists(frontend_dist):
+    # Mount Vite static assets folder
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="static_assets")
+
+    # Serve index.html for all other paths (supporting React router client-side routes)
+    @app.get("/{catchall:path}")
+    async def serve_react_app(catchall: str):
+        # Prevent catching API endpoints that actually returned 404
+        if catchall.startswith(("predict", "records", "generate-pdf", "health", "docs", "redoc", "openapi.json")):
+            raise HTTPException(status_code=404, detail="API endpoint not found")
+        return FileResponse(os.path.join(frontend_dist, "index.html"))
