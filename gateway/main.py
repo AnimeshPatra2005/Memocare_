@@ -2,6 +2,7 @@
 import os
 import httpx
 import jwt
+from jwt import PyJWKClient
 from typing import Dict, Any
 from fastapi import FastAPI, Depends, HTTPException, Header, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -19,13 +20,14 @@ app.add_middleware(
 )
 
 # Environment Variables for internal service URLs
-DB_SERVICE_URL = os.getenv("DB_SERVICE_URL", "http://db-service:8001")
-MRI_SERVICE_URL = os.getenv("MRI_SERVICE_URL", "http://model-mri:8002")
-TABULAR_SERVICE_URL = os.getenv("TABULAR_SERVICE_URL", "http://model-tabular:8003")
-PDF_SERVICE_URL = os.getenv("PDF_SERVICE_URL", "http://pdf-reports:8004")
+DB_SERVICE_URL = "http://db-service:8002"
+MRI_SERVICE_URL = "http://model-mri:7860"
+TABULAR_SERVICE_URL = "http://model-tabular:8002"
+PDF_SERVICE_URL = "http://pdf-reports:8003"
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
 
-# Supabase JWT Secret for local verification
-SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
+# Cache for PyJWKClient instances to avoid hitting the network on every request
+jwk_clients = {}
 
 # Dependency to verify JWT and return the user's UUID
 def get_current_user_id(authorization: str = Header(None)) -> str:
@@ -34,22 +36,41 @@ def get_current_user_id(authorization: str = Header(None)) -> str:
     
     token = authorization.split(" ")[1]
     
-    if not SUPABASE_JWT_SECRET:
-        raise HTTPException(status_code=500, detail="JWT secret not configured on gateway")
-        
     try:
-        # Supabase JWTs are signed with HS256 and contain "authenticated" as the role/audience
+        # 1. Decode token without verification to read the issuer ('iss') claim
+        unverified_payload = jwt.decode(token, options={"verify_signature": False})
+        issuer = unverified_payload.get("iss")
+        if not issuer:
+            raise HTTPException(status_code=401, detail="Invalid token: missing issuer claim")
+        
+        # 2. Get or create PyJWKClient for this issuer's JWKS endpoint
+        # Supabase hosts their JWKS at the standard .well-known path
+        jwks_url = f"{issuer.rstrip('/')}/.well-known/jwks.json"
+        
+        if jwks_url not in jwk_clients:
+            headers = {"apikey": SUPABASE_ANON_KEY} if SUPABASE_ANON_KEY else {}
+            jwk_clients[jwks_url] = PyJWKClient(jwks_url, headers=headers)
+            
+        jwks_client = jwk_clients[jwks_url]
+        
+        # 3. Retrieve the matching signing key from JWKS
+        signing_key = jwks_client.get_signing_key_from_jwt(token)
+        
+        # 4. Verify signature using the retrieved public key (supports ES256 and RS256)
         payload = jwt.decode(
-            token, 
-            SUPABASE_JWT_SECRET, 
-            algorithms=["HS256"], 
-            options={"verify_aud": False} # Supabase uses aud: "authenticated"
+            token,
+            signing_key.key,
+            algorithms=["ES256", "RS256"],
+            options={"verify_aud": False}
         )
         return payload["sub"] # sub holds the Supabase User UUID
+        
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid authorization token")
+    except jwt.InvalidTokenError as e:
+        raise HTTPException(status_code=401, detail=f"Invalid authorization token: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Authentication failed: {str(e)}")
 
 
 # --- HEALTH CHECK ---
