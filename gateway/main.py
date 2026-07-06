@@ -243,4 +243,24 @@ if os.path.exists(frontend_dist):
         # Prevent catching API endpoints that actually returned 404
         if catchall.startswith(("predict", "records", "generate-pdf", "health", "docs", "redoc", "openapi.json")):
             raise HTTPException(status_code=404, detail="API endpoint not found")
-        return FileResponse(os.path.join(frontend_dist, "index.html"))
+        
+        index_path = os.path.join(frontend_dist, "index.html")
+        if not os.path.exists(index_path):
+            raise HTTPException(status_code=404, detail="Frontend index file not found")
+            
+        with open(index_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+            
+        # Inject dynamic environment variables into the head so the SPA reads them at runtime
+        env_script = f"""
+        <script>
+          window.__env__ = {{
+            VITE_SUPABASE_URL: "{os.getenv('VITE_SUPABASE_URL', '')}",
+            VITE_SUPABASE_ANON_KEY: "{os.getenv('SUPABASE_ANON_KEY', '')}"
+          }};
+        </script>
+        """
+        html_content = html_content.replace("<head>", f"<head>{env_script}", 1)
+        
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=html_content)
