@@ -6,7 +6,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlmodel import Field, SQLModel, Session, create_engine, select
 from dotenv import load_dotenv
 
-# Load variables from a .env file
+
 load_dotenv()
 
 # Get the Supabase Connection String from environment variables
@@ -18,7 +18,6 @@ if not DATABASE_URL:
 engine = create_engine(DATABASE_URL)
 
 class MRIRecord(SQLModel, table=True):
-    # __tablename__ tells PostgreSQL the actual table name
     __tablename__: str = "mri_records"
     
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -42,7 +41,7 @@ app = FastAPI(title="MemoCare DB Service")
 # This event runs when the FastAPI service starts up
 @app.on_event("startup")
 def on_startup():
-    # This automatically creates the tables in Supabase if they do not exist yet!
+    # Automatically creates the tables in Supabase if they do not exist yet
     SQLModel.metadata.create_all(engine)
 
 # Dependency injection to get DB connection sessions
