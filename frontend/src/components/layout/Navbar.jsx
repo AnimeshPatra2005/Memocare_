@@ -54,6 +54,26 @@ export default function Navbar() {
           MemoCare
         </span>
       </div>
+      
+      {/* Navigation Links */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginRight: 'auto', marginLeft: '40px' }}>
+        <span 
+          onClick={() => navigate('/dashboard')}
+          style={{ fontSize: '15px', color: '#888', cursor: 'pointer', fontFamily: 'Space Mono, monospace', transition: 'color 0.2s' }}
+          onMouseEnter={(e) => e.target.style.color = '#06b6d4'}
+          onMouseLeave={(e) => e.target.style.color = '#888'}
+        >
+          Dashboard
+        </span>
+        <span 
+          onClick={() => navigate('/history')}
+          style={{ fontSize: '15px', color: '#888', cursor: 'pointer', fontFamily: 'Space Mono, monospace', transition: 'color 0.2s' }}
+          onMouseEnter={(e) => e.target.style.color = '#06b6d4'}
+          onMouseLeave={(e) => e.target.style.color = '#888'}
+        >
+          History
+        </span>
+      </div>
 
       {/* User info & Actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>

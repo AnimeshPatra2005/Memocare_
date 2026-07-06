@@ -78,3 +78,23 @@ def get_tabular_records(user_id: UUID, db: Session = Depends(get_db)):
     statement = select(TabularRecord).where(TabularRecord.user_id == user_id).order_by(TabularRecord.created_at.desc())
     results = db.exec(statement).all()
     return results
+
+@app.delete("/records/mri/{record_id}/{user_id}")
+def delete_mri_record(record_id: UUID, user_id: UUID, db: Session = Depends(get_db)):
+    statement = select(MRIRecord).where(MRIRecord.id == record_id).where(MRIRecord.user_id == user_id)
+    record = db.exec(statement).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found or unauthorized")
+    db.delete(record)
+    db.commit()
+    return {"status": "success"}
+
+@app.delete("/records/tabular/{record_id}/{user_id}")
+def delete_tabular_record(record_id: UUID, user_id: UUID, db: Session = Depends(get_db)):
+    statement = select(TabularRecord).where(TabularRecord.id == record_id).where(TabularRecord.user_id == user_id)
+    record = db.exec(statement).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found or unauthorized")
+    db.delete(record)
+    db.commit()
+    return {"status": "success"}

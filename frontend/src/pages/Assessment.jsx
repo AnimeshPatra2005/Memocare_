@@ -61,9 +61,9 @@ export default function Assessment() {
       setResult(predictionData)
 
       // 2. Encrypt Data (Inputs) and Verdict separately as per Schema
-      const encryptedInputs = await encryptData(payload, cryptoKey)
+      const encryptedInputs = await encryptData(JSON.stringify(payload), cryptoKey)
       const encryptedVerdictObj = await encryptData(
-        { verdict: predictionData.result_text, probability: predictionData.alzheimers_probability },
+        JSON.stringify({ verdict: predictionData.result_text, probability: predictionData.alzheimers_probability }),
         cryptoKey
       )
 
@@ -76,8 +76,8 @@ export default function Assessment() {
         },
         body: JSON.stringify({
           encrypted_data: encryptedInputs.ciphertext,
-          encrypted_verdict: encryptedVerdictObj.ciphertext,
-          iv: encryptedInputs.iv // Assuming same IV or keeping backend happy. Wait, encryptData generates a new IV each time. Let's just use encryptedInputs.iv for the DB if it only has 1 IV column. Let's check backend schema.
+          encrypted_verdict: `${encryptedVerdictObj.iv}:${encryptedVerdictObj.ciphertext}`,
+          iv: encryptedInputs.iv
         })
       })
 
