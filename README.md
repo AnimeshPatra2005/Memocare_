@@ -1,23 +1,11 @@
----
-title: MemoCare
-emoji: 🧠
-colorFrom: indigo
-colorTo: blue
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 # MemoCare 🧠
 
 **Creators**: Animesh Patra and Soham Ganguly
 
-### 🔗 Links
+### Links
 - **Live Demo**: [MemoCare on Hugging Face](https://samotar007-memocare.hf.space)
 - **GitHub Repository**: [AnimeshPatra2005/Memocare_](https://github.com/AnimeshPatra2005/Memocare_)
-- **Legacy Demo Video**: [YouTube](https://www.youtube.com/watch?v=LM9doDIdOm0)
-
-## 🩺 Overview
+## Overview
 MemoCare is an intuitive, secure, and modern platform designed to aid in the detection and classification of Alzheimer's disease using deep learning models. The site enables users to upload MRI scan images for analysis and provides reliable classification into categories such as:
 - Non-Demented
 - Very Mild Demented
@@ -26,20 +14,20 @@ MemoCare is an intuitive, secure, and modern platform designed to aid in the det
 
 Additionally, the platform allows users to input clinical medical data for classification, helping to determine whether a patient is likely to have Alzheimer's. This dual approach provides a comprehensive tool for early detection and monitoring of Alzheimer's disease progression.
 
-### 🔥 Core Upgrades (v2.0)
+### Core Upgrades (v2.0)
 This project has been massively re-architected from a legacy Flask monolith into a modern, enterprise-grade application:
 - **Microservice Architecture**: The backend is powered by 5 distinct FastAPI microservices running asynchronously on isolated internal ports to drastically reduce concurrent API latency.
 - **End-to-End Encryption (E2EE)**: All sensitive patient medical history is encrypted client-side in the browser using WebCrypto AES-GCM before being stored in the database, ensuring zero-knowledge HIPAA-compliant data security.
 - **Serverless Docker Deployment**: The entire stack (React frontend + 5 Python microservices) is packaged into a single multi-stage Docker container deployed on Hugging Face Spaces.
 
-## ✨ Features
+## Features
 - **MRI Scan Analysis**: Utilizes a DenseNet201 feature extractor paired with an ANN classifier for accurate staging of dementia.
 - **Clinical Data Assessment**: Utilizes an ensemble learning technique (Random Forest + Gradient Boosting + Logistic Regression meta-learner) to screen for Alzheimer's likelihood based on 17 clinical variables.
 - **Zero-Knowledge Storage**: Users authenticate securely via Supabase (JWT), and encryption keys are derived locally in the browser to encrypt all medical records natively.
 - **Automated PDF Reporting**: Asynchronous microservices compile and serve structured clinical PDF reports based on diagnostic metrics.
 - **Interactive UI**: A stunning dark-themed interface built with React, Tailwind CSS, and 3D web graphics (`@react-three/fiber`).
 
-## 📊 Dataset
+## Dataset
 This project utilizes two distinct models, each with its own dataset:
 
 ### Model-1: Medical Data Model
@@ -50,7 +38,7 @@ Model-1 uses a comprehensive medical dataset containing health information for 2
 Model-2 uses a dataset of MRI scan images consisting of 6,400 images divided into four categories (augmented to 12,072 images to prevent overfitting).
 - **Dataset Link**: [MRI Scan Dataset on Kaggle](https://www.kaggle.com/datasets/raihannaufalramadhan/alzheimer-data)
 
-## 📈 Accuracy, Precision and Recall
+## Accuracy, Precision and Recall
 
 #### Alzheimer Prediction Model (Tabular)
 **Accuracy**: `95.81%`
@@ -81,7 +69,7 @@ Model-2 uses a dataset of MRI scan images consisting of 6,400 images divided int
 **Macro Avg:** Precision: 0.91, Recall: 0.95, F1-Score: 0.93  
 **Weighted Avg:** Precision: 0.94, Recall: 0.93, F1-Score: 0.93
 
-## 💻 Technologies Used
+## Technologies Used
 - **Frontend**: React, Vite, Tailwind CSS, Three.js (React Three Fiber)
 - **Backend**: FastAPI (Python), Uvicorn (Microservices)
 - **Database**: Supabase (PostgreSQL), JWT Authentication
@@ -89,7 +77,7 @@ Model-2 uses a dataset of MRI scan images consisting of 6,400 images divided int
 - **Machine Learning**: TensorFlow, Keras, Scikit-learn, Pandas
 - **Deployment**: Docker, Hugging Face Spaces (Git LFS)
 
-## 🚀 Local Development (Docker)
+## Local Development (Docker)
 Because the application is orchestrated as an all-in-one container, running it locally is incredibly simple:
 
 ```bash
@@ -105,7 +93,7 @@ docker run -p 7860:7860 -it memocare
 ```
 Navigate to `http://localhost:7860` in your browser.
 
-## 📬 Contact
+## Contact
 For inquiries, please contact:
 - [btech10357.23@bitmesra.ac.in](mailto:btech10357.23@bitmesra.ac.in)
 - [btech10336.23@bitmesra.ac.in](mailto:btech10336.23@bitmesra.ac.in)
